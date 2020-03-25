@@ -25,23 +25,52 @@ database.once('value', function (snapshot) {
 var isNumber = document.getElementById('number');
 var isSort = document.getElementById('sort');
 var isAll = document.getElementById('all');
+var isNotThem = document.getElementById('not-them');
 var input = document.getElementById('input');
 var output = document.getElementById('output');
 
 isNumber.addEventListener('change', render);
 isSort.addEventListener('change', render);
 isAll.addEventListener('change', renderAll)
+isNotThem.addEventListener('change', render)
 input.addEventListener('keyup', render);
 
 function render() {
-  var inputNames = input.value.toLowerCase().split('\n');
+  var inputNames = input.value
+    .replace(/\)/g, '.')
+    .toLowerCase()
+    .split('\n')
+    .map(function (name) {
+      return name.substring(name.indexOf('.') + 1).trim();
+    });
+  console.log(inputNames);
   var outputNames = [];
   inputNames.forEach(function (name) {
-    for (var i = 0; i < DATA.length; ++i)
-      if (DATA[i].nickname === name)
+    var inSquad = false;
+    for (var i = 0; i < DATA.length; ++i) {
+      if (DATA[i].nickname === name) {
         outputNames.push(DATA[i].fullname);
+        inSquad = true;
+        break;
+      }
+    }
+    if (!inSquad && name.length)
+      outputNames.push('"' + name + '" not in Squad Ben10!');
   });
-  if (isSort.checked) outputNames.sort();
+  var otherNames = [];
+  if (isNotThem.checked) {
+    DATA.forEach(function (name) {
+      var hasName = false;
+      for (var i = 0; i < outputNames.length; ++i)
+        if (name.fullname === outputNames[i])
+          hasName = true;
+      if (!hasName)
+        otherNames.push(name.fullname);
+    });
+    outputNames = otherNames.map(function (name) { return name; });
+  }
+  if (isSort.checked)
+    outputNames.sort();
   if (isNumber.checked)
     for (var i = 0; i < outputNames.length; ++i)
       outputNames[i] = i + 1 + '. ' + outputNames[i];
@@ -50,7 +79,7 @@ function render() {
 
 function renderAll() {
   if (isAll.checked) {
-    var inputNames = DATA.map(function (name) {return name.nickname;});
+    var inputNames = DATA.map(function (name) { return name.nickname; });
     var outputNames = DATA.map(function (name) { return name.fullname; });
     input.value = inputNames.join('\n');
     output.value = outputNames.join('\n');
