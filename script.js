@@ -43,7 +43,6 @@ function render() {
     .map(function (name) {
       return name.substring(name.indexOf('.') + 1).trim();
     });
-  console.log(inputNames);
   var outputNames = [];
   inputNames.forEach(function (name) {
     var inSquad = false;
